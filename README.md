@@ -6,21 +6,25 @@ Tabletop Tracker is a web app for tabletop gamers to communicate and organize co
 2. **Git**
 
 ## Setup Steps
-1. Clone the repository
-2. Create and activate virtual environment
-3. Install requirements.txt
-4. Setup .env file
-5. Create local database
-6. Run app
+1. **Clone the repository**
+2. **Create and activate virtual environment**
+3. **Install requirements.txt**
+4. **Setup .env file**
+5. **Create local database**
+6. **Run app**
 
 ## Environment Variable Setup
 Create an .env file in your local repository like this:
+~~~
 FLASK_APP=run.py
 FLASK_ENV=development
 DATABASE_URL=sqlite:///dev.db
 SECRET_KEY=your-secret-key
 JWT_SECRET_KEY=your-jwt-secret
+~~~
 
 ## Database Setup
 After cloning the codebase and activating local database:
-~~~flask db upgrade~~~
+~~~
+flask db upgrade
+~~~
