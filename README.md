@@ -10,8 +10,8 @@ Tabletop Tracker is a web app for tabletop gamers to communicate and organize co
 2. **Create and activate virtual environment**
 3. **Install requirements.txt**
 4. **Setup .env file**
-5. **Create local database**
-6. **Run app**
+5. **Initialize and upgrade the local database**
+6. **Run the app: flask run**
 
 ## Environment Variable Setup
 Create an .env file in your local repository like this:
@@ -23,8 +23,8 @@ SECRET_KEY=your-secret-key
 JWT_SECRET_KEY=your-jwt-secret
 ~~~
 
-## Database Setup
-After cloning the codebase and activating local database:
+## Initialize and Upgrade Database
+After cloning the codebase and installing requirements:
 ~~~
 flask db upgrade
 ~~~
