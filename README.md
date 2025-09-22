@@ -5,13 +5,23 @@ Tabletop Tracker is a web app for tabletop gamers to communicate and organize co
 1. **Python 3.10+**  
 2. **Git**
 
-## Setup Steps
+## Initial Setup
 1. **Clone the repository**
 2. **Create and activate virtual environment**
 3. **Install requirements.txt**
 4. **Setup .env file**
 5. **Initialize and upgrade the local database**
-6. **Run the app: flask run**
+6. **Front end setup**
+
+## Running the App
+1. **Start the backend: flask run**
+2. **In another terminal, start the frontend:**
+~~~
+cd tabletoptracker-frontend
+npm run dev
+~~~
+3. **Open http://localhost:5173/**
+
 
 ## Environment Variable Setup
 Create an .env file in your local repository like this:
@@ -27,4 +37,11 @@ JWT_SECRET_KEY=your-jwt-secret
 After cloning the codebase and installing requirements:
 ~~~
 flask db upgrade
+~~~
+
+## Frontend Setup (React + Vite)
+Run the following commands to install the required packages:
+~~~
+cd tabletoptracker-frontend
+npm install
 ~~~
