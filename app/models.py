@@ -1,4 +1,7 @@
 from .extensions import db
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class User(db.Model):
     __tablename__ = "users"
@@ -12,6 +15,12 @@ class User(db.Model):
     event_players = db.relationship("EventPlayer", back_populates="user")
     event_roles = db.relationship("EventRole", back_populates="user")
     match_players = db.relationship("MatchPlayer", back_populates="user")
+
+    def set_password(self, password):
+        self.pw = pwd_context.hash(password)
+
+    def check_password(self, password):
+        return pwd_context.verify(password, self.pw)
 
 
 class Event(db.Model):

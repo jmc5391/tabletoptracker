@@ -1,10 +1,12 @@
+bcrypt==4.0.1
 cryptography
 Flask
+Flask-Limiter
 Flask-SQLAlchemy
 Flask-Migrate
 Flask-JWT-Extended
 Flask-Cors
 flask-marshmallow
-passlib
+passlib[bcrypt]==1.7.4
 pymysql
 python-dotenv

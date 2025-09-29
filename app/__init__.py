@@ -1,6 +1,6 @@
 from flask import Flask, jsonify
 from .config import Config
-from .extensions import db, migrate, jwt, cors, ma
+from .extensions import db, migrate, jwt, cors, ma, limiter
 
 def create_app(config_class=None):
     app = Flask(__name__, static_folder=None)
@@ -9,8 +9,10 @@ def create_app(config_class=None):
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
-    cors.init_app(app, resources={r"/api/*": {"origins": app.config.get("CORS_ORIGINS", "*")}})
+    cors.init_app(app, resources={r"/api/*": {"origins": app.config["CORS_ORIGINS"]}},supports_credentials=True)
+
     ma.init_app(app)
+    limiter.init_app(app)
 
     from .blueprints.users import users_bp
     from .blueprints.events import events_bp
