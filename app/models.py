@@ -32,9 +32,9 @@ class Event(db.Model):
     end_date = db.Column(db.Date, nullable=True)
 
     # relationships
-    event_players = db.relationship("EventPlayer", back_populates="event")
-    event_roles = db.relationship("EventRole", back_populates="event")
-    matches = db.relationship("Match", back_populates="event")
+    event_players = db.relationship("EventPlayer", back_populates="event", cascade="all, delete-orphan")
+    event_roles = db.relationship("EventRole", back_populates="event", cascade="all, delete-orphan")
+    matches = db.relationship("Match", back_populates="event", cascade="all, delete-orphan")
 
 
 class EventPlayer(db.Model):
