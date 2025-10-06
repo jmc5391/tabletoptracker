@@ -57,12 +57,12 @@ def logout():
 @users_bp.route("/<int:user_id>", methods=["GET"])
 @jwt_required()
 def get_user(user_id):
-    current = get_jwt_identity()
-    if current != user_id:
-        return jsonify({"msg": "forbidden"}), 403
-
     user = User.query.get_or_404(user_id)
-    return jsonify({"id": user.user_id, "email": user.email, "name": user.name}), 200
+    return jsonify({
+        "user_id": user.user_id,
+        "email": user.email,
+        "name": user.name
+    }), 200
 
 
 @users_bp.route("/<int:user_id>", methods=["POST"])

@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import EventPage from "./pages/EventPage";
 import MatchPage from "./pages/MatchPage";
 import ProfilePage from "./pages/ProfilePage";
+import EventForm from "./pages/EventForm";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -37,38 +38,11 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login setUser={setUser} />} />
 
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute user={user}>
-                <Dashboard user={user} />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/events/:id"
-            element={
-              <ProtectedRoute user={user}>
-                <EventPage user={user} />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/matches/:id"
-            element={
-              <ProtectedRoute user={user}>
-                <MatchPage user={user} />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile/:id"
-            element={
-              <ProtectedRoute user={user}>
-                <ProfilePage user={user} />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/dashboard" element={<Dashboard user={user} />}/>
+          <Route path="/matches/:matchId" element={<MatchPage />}/>
+          <Route path="/profile/:userId" element={<ProfilePage />}/>
+          <Route path="/events/new" element={<EventForm />} />
+          <Route path="/events/:eventId" element={<EventPage />} />
         </Routes>
       </div>
     </Router>
