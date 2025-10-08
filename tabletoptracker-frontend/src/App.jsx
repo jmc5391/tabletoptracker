@@ -13,6 +13,8 @@ import EventPage from "./pages/EventPage";
 import MatchPage from "./pages/MatchPage";
 import ProfilePage from "./pages/ProfilePage";
 import EventForm from "./pages/EventForm";
+import MatchForm from "./pages/MatchForm";
+import ResultsForm from "./pages/ResultsForm";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -43,6 +45,8 @@ function App() {
           <Route path="/profile/:userId" element={<ProfilePage />}/>
           <Route path="/events/new" element={<EventForm />} />
           <Route path="/events/:eventId" element={<EventPage />} />
+          <Route path="/events/:eventId/matches/new" element={<MatchForm />} />
+          <Route path="/matches/:matchId/results" element={<ResultsForm />} />
         </Routes>
       </div>
     </Router>

@@ -13,13 +13,18 @@ function EventPage() {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const res = await API.get(`/api/events/${eventId}`);
-        setEvent(res.data);
+        const [eventRes, meRes] = await Promise.all([
+          API.get(`/api/events/${eventId}`),
+          API.get("/api/users/me"),
+        ]);
 
-        const meRes = await API.get("/api/users/me");
+        const eventData = eventRes.data;
         const myId = meRes.data.user_id;
-        const amAdmin = res.data.admins.some(a => a.user_id === myId);
+
+        // determine if current user is an event admin
+        const amAdmin = eventData.admins?.some((a) => a.user_id === myId);
         setIsAdmin(amAdmin);
+        setEvent(eventData);
       } catch (err) {
         console.error(err);
         setError(err.response?.data?.msg || "Failed to load event");
@@ -27,6 +32,15 @@ function EventPage() {
     };
     fetchEvent();
   }, [eventId]);
+
+  const refreshEvent = async () => {
+    try {
+      const updated = await API.get(`/api/events/${eventId}`);
+      setEvent(updated.data);
+    } catch (err) {
+      console.error("Failed to refresh event:", err);
+    }
+  };
 
   const handleDelete = async () => {
     if (!window.confirm("Are you sure you want to delete this event?")) return;
@@ -43,8 +57,7 @@ function EventPage() {
     try {
       await API.post(`/api/events/${eventId}/players`, { email });
       setEmail("");
-      const updated = await API.get(`/api/events/${eventId}`);
-      setEvent(updated.data);
+      await refreshEvent();
     } catch (err) {
       setError(err.response?.data?.msg || "Failed to add player");
     }
@@ -54,32 +67,43 @@ function EventPage() {
     if (!window.confirm("Remove this player from the event?")) return;
     try {
       await API.delete(`/api/events/${eventId}/players/${playerId}`);
-      const updated = await API.get(`/api/events/${eventId}`);
-      setEvent(updated.data);
+      await refreshEvent();
     } catch (err) {
       setError(err.response?.data?.msg || "Failed to remove player");
+    }
+  };
+
+  const handleDeleteMatch = async (matchId) => {
+    if (!window.confirm("Are you sure you want to delete this match?")) return;
+    try {
+      await API.delete(`/api/matches/${matchId}`);
+      await refreshEvent();
+    } catch (err) {
+      setError(err.response?.data?.msg || "Failed to delete match");
     }
   };
 
   if (error) return <p className="text-red-500">{error}</p>;
   if (!event) return <p>Loading event...</p>;
 
+  const upcomingMatches = event.matches?.filter((m) => m.status !== "completed") || [];
+  const pastMatches = event.matches?.filter((m) => m.status === "completed") || [];
+
   return (
     <div className="p-4 space-y-6">
       <h2 className="text-2xl font-bold">{event.name}</h2>
       <p>
-        <strong>Start:</strong> {event.start_date || "N/A"}<br />
+        <strong>Start:</strong> {event.start_date || "N/A"}
+        <br />
         <strong>End:</strong> {event.end_date || "N/A"}
       </p>
 
       <div>
         <h3 className="text-lg font-semibold mt-4">Organizers</h3>
         <ul className="list-disc ml-6">
-          {event.admins.map(a => (
+          {event.admins?.map((a) => (
             <li key={a.user_id}>
-              <Link to={`/profile/${a.user_id}`} className="text-blue-600 underline">
-                {a.name}
-              </Link> ({a.email})
+              {a.name} ({a.email})
             </li>
           ))}
         </ul>
@@ -96,7 +120,7 @@ function EventPage() {
             </tr>
           </thead>
           <tbody>
-            {event.players.map(p => (
+            {event.players.map((p) => (
               <tr key={p.user_id}>
                 <td className="p-2 border">
                   <Link to={`/profile/${p.user_id}`} className="text-blue-600 underline">
@@ -118,6 +142,87 @@ function EventPage() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Upcoming Matches */}
+      <div>
+        <h3 className="text-lg font-semibold mt-4">Upcoming Matches</h3>
+        {upcomingMatches.length > 0 ? (
+          <table className="min-w-full border mt-2">
+            <thead>
+              <tr className="bg-gray-100 text-left">
+                <th className="p-2 border">Match</th>
+                <th className="p-2 border">Date</th>
+                {isAdmin && <th className="p-2 border">Actions</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {upcomingMatches.map((m) => (
+                <tr key={m.match_id}>
+                  <td className="p-2 border">
+                    <Link to={`/matches/${m.match_id}`} className="text-blue-600 underline">
+                      {m.match_title}
+                    </Link>
+                  </td>
+                  <td className="p-2 border">{m.date_played || "—"}</td>
+                  {isAdmin && (
+                    <td className="p-2 border">
+                      <button
+                        onClick={() => handleDeleteMatch(m.match_id)}
+                        className="bg-red-500 text-white px-2 py-1 rounded"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p className="mt-2 text-gray-600">No upcoming matches.</p>
+        )}
+        {isAdmin && (
+          <button
+            onClick={() => navigate(`/events/${eventId}/matches/new`)}
+            className="bg-green-500 text-white p-2 rounded mt-4"
+          >
+            + Add Match
+          </button>
+        )}
+      </div>
+
+      {/* Past Matches */}
+      <div>
+        <h3 className="text-lg font-semibold mt-4">Past Matches</h3>
+        {pastMatches.length > 0 ? (
+          <table className="min-w-full border mt-2">
+            <thead>
+              <tr className="bg-gray-100 text-left">
+                <th className="p-2 border">Date</th>
+                <th className="p-2 border">Match</th>
+                <th className="p-2 border">Result</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pastMatches.map((m) => (
+                <tr key={m.match_id}>
+                  <td className="p-2 border">{m.date_played || "—"}</td>
+                  <td className="p-2 border">
+                    <Link to={`/matches/${m.match_id}`} className="text-blue-600 underline">
+                      {m.match_title}
+                    </Link>
+                  </td>
+                  <td className="p-2 border text-center">
+                    {m.result_label || "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p className="mt-2 text-gray-600">No past matches.</p>
+        )}
       </div>
 
       {isAdmin && (
