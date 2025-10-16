@@ -14,6 +14,31 @@ def parse_iso(dt_str):
 
 
 # ======== EVENT ENDPOINTS ========
+@events_bp.route("/", methods=["GET"])
+@jwt_required()
+def list_events():
+    user_id = get_jwt_identity()
+
+    # Get all events where user has a role
+    events = (
+        db.session.query(Event)
+        .join(EventRole)
+        .filter(EventRole.user_id == user_id)
+        .all()
+    )
+
+    result = []
+    for e in events:
+        result.append({
+            "event_id": e.event_id,
+            "name": e.name,
+            "start_date": e.start_date.isoformat() if e.start_date else None,
+            "end_date": e.end_date.isoformat() if e.end_date else None,
+        })
+
+    return jsonify(result), 200
+
+
 @events_bp.route("/", methods=["POST"])
 @jwt_required()
 def create_event():
@@ -208,40 +233,23 @@ def add_player(event_id):
     if not user:
         return jsonify({"msg": "user not found"}), 404
 
-    # Prevent duplicate
+    # Prevent duplicate EventPlayer
     exists = EventPlayer.query.filter_by(event_id=event_id, user_id=user.user_id).first()
     if exists:
         return jsonify({"msg": "player already added"}), 400
 
+    # Add EventPlayer entry
     ep = EventPlayer(user_id=user.user_id, event_id=event_id)
     db.session.add(ep)
+
+    # Ensure EventRole entry exists for "player" role
+    player_role = EventRole.query.filter_by(event_id=event_id, user_id=user.user_id, role="player").first()
+    if not player_role:
+        new_role = EventRole(user_id=user.user_id, event_id=event_id, role="player")
+        db.session.add(new_role)
+
     db.session.commit()
     return jsonify({"msg": "player added", "user_id": user.user_id}), 201
-
-
-@events_bp.route("/", methods=["GET"])
-@jwt_required()
-def list_events():
-    user_id = get_jwt_identity()
-
-    # Get all events where user has a role
-    events = (
-        db.session.query(Event)
-        .join(EventRole)
-        .filter(EventRole.user_id == user_id)
-        .all()
-    )
-
-    result = []
-    for e in events:
-        result.append({
-            "event_id": e.event_id,
-            "name": e.name,
-            "start_date": e.start_date.isoformat() if e.start_date else None,
-            "end_date": e.end_date.isoformat() if e.end_date else None,
-        })
-
-    return jsonify(result), 200
 
 
 @events_bp.route("/<int:event_id>/players/<int:user_id>", methods=["DELETE"])
@@ -250,17 +258,23 @@ def remove_player(event_id, user_id):
     current = get_jwt_identity()
     ev = Event.query.get_or_404(event_id)
 
-    # check if current user is an admin/organizer
+    # check if current user is an admin
     is_admin = EventRole.query.filter_by(event_id=event_id, user_id=current, role="admin").first()
     if not is_admin:
         return jsonify({"msg": "forbidden"}), 403
 
-    # find the EventPlayer or invited email entry
+    # find the EventPlayer
     ep = EventPlayer.query.filter_by(event_id=event_id, user_id=user_id).first()
     if not ep:
         return jsonify({"msg": "player not found"}), 404
 
     db.session.delete(ep)
+
+    # remove EventRole entry only if the role is "player"
+    player_role = EventRole.query.filter_by(event_id=event_id, user_id=user_id, role="player").first()
+    if player_role:
+        db.session.delete(player_role)
+
     db.session.commit()
     return jsonify({"msg": "player removed"}), 200
 
