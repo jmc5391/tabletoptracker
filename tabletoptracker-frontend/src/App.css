@@ -13,7 +13,6 @@ body {
   background-color: #f9fafb;
 }
 
-
 nav {
   text-align: left;
 }
@@ -224,4 +223,74 @@ nav {
 
 .mt-2 {
   margin-top: 0.5rem;
+}
+
+.navbar {
+  background-color: #fff;
+  border-bottom: 1px solid #ccc;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  padding: 1rem 2rem;
+}
+
+.navbar-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar-logo {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #333;
+  text-decoration: none;
+}
+
+.navbar-logo:hover {
+  color: #000;
+}
+
+.navbar-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.navbar-user {
+  font-weight: 500;
+  color: #333;
+  text-decoration: none;
+}
+
+.navbar-user:hover {
+  text-decoration: underline;
+  color: #000;
+}
+
+.navbar-button {
+  padding: 0.4rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.navbar-button.login {
+  background-color: #3b82f6; /* blue */
+  color: #fff;
+}
+
+.navbar-button.register {
+  background-color: #10b981; /* green */
+  color: #fff;
+}
+
+.navbar-button.logout {
+  background-color: #ef4444; /* red */
+  color: #fff;
+}
+
+.navbar-button:hover {
+  opacity: 0.9;
 }
