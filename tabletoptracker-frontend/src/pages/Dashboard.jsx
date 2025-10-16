@@ -145,7 +145,9 @@ function Dashboard() {
                         {m.match_title}
                       </Link>
                     </td>
-                    <td>{m.event_name}</td>
+                    <td><Link to={`/events/${m.event_id}`} className="event-admin-link">
+                        {m.event_name}
+                      </Link></td>
                     <td>{m.result_label || "—"}</td>
                   </tr>
                 ))}

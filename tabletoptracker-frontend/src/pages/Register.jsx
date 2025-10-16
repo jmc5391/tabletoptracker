@@ -20,33 +20,55 @@ function Register() {
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl mb-4">Register</h2>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
-          className="border p-2 rounded"
-        />
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Name"
-          className="border p-2 rounded"
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-          className="border p-2 rounded"
-        />
-        <button type="submit" className="bg-blue-500 text-white p-2 rounded">
-          Register
-        </button>
-      </form>
-      {message && <p className="mt-2">{message}</p>}
+    <div className="event-container">
+      <div className="event-box max-w-md mx-auto">
+        <h2 className="card-title text-center">Register</h2>
+
+        <form onSubmit={handleSubmit} className="event-form">
+          <div className="event-section">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email"
+              className="input-field"
+              required
+            />
+          </div>
+
+          <div className="event-section">
+            <label htmlFor="name">Name</label>
+            <input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Name"
+              className="input-field"
+              required
+            />
+          </div>
+
+          <div className="event-section">
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              className="input-field"
+              required
+            />
+          </div>
+
+          <button type="submit" className="add-btn w-full">
+            Register
+          </button>
+        </form>
+
+        {message && <p className="mt-2 text-center">{message}</p>}
+      </div>
     </div>
   );
 }

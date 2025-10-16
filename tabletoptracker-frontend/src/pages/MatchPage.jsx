@@ -14,23 +14,18 @@ function MatchPage() {
   useEffect(() => {
     const fetchMatchAndUser = async () => {
       try {
-        // get match data
         const matchRes = await API.get(`/api/matches/${matchId}`);
         setMatch(matchRes.data);
 
-        // get current user
         const meRes = await API.get("/api/users/me");
         const myId = meRes.data.user_id;
         setCurrentUserId(myId);
 
-        // check if current user is an admin of the event
         const admins = matchRes.data.event_admins || [];
         setIsAdmin(admins.some(a => a.user_id === myId));
 
-        // check if current user is a player in this match
         const players = matchRes.data.players || [];
         setIsPlayer(players.some(p => p.user_id === myId));
-
       } catch (err) {
         console.error(err);
         setError(err.response?.data?.msg || "Failed to load match");
@@ -53,58 +48,60 @@ function MatchPage() {
     navigate(`/matches/${matchId}/results`);
   };
 
-  if (error) return <p className="text-red-500">{error}</p>;
+  if (error) return <p className="text-red">{error}</p>;
   if (!match) return <p>Loading match...</p>;
 
   const showScores = match.status === "completed";
+  const [player1, player2] = match.players;
+
+  let finalScoreText = "";
+  if (showScores && player1 && player2) {
+    if (player1.score > player2.score) {
+      finalScoreText = `${player1.name} won ${player1.score} - ${player2.score}!`;
+    } else if (player2.score > player1.score) {
+      finalScoreText = `${player2.name} won ${player2.score} - ${player1.score}!`;
+    } else {
+      finalScoreText = `${player1.score} - ${player2.score}, Tie`;
+    }
+  }
 
   return (
-    <div className="p-4 space-y-4">
-      <h2 className="text-2xl font-bold">Match Details</h2>
-      <p><strong>Round:</strong> {match.round}</p>
-      <p><strong>Date:</strong> {match.date}</p>
-      <p><strong>Status:</strong> {match.status}</p>
+    <div className="event-container">
+      <div className="event-header">
+        <h2 className="event-title">Match Details</h2>
+      </div>
+      <div className="event-box text-center">
+        <h1 style={{ fontSize: "2rem", fontWeight: "700", marginBottom: "0.5rem" }}>
+          <Link to={`/profile/${player1?.user_id}`} className="event-admin-link">
+            {player1?.name ?? "N/A"}
+          </Link>
+          <span style={{ margin: "0 0.5rem", fontStyle: "italic" }}>vs</span>
+          <Link to={`/profile/${player2?.user_id}`} className="event-admin-link">
+            {player2?.name ?? "N/A"}
+          </Link>
+        </h1>
 
-      <table className="min-w-full border mt-2">
-        <thead>
-          <tr className="bg-gray-100 text-left">
-            <th className="p-2 border">Player</th>
-            {showScores && <th className="p-2 border">Score</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {[match.players[0], match.players[1]].map((team, idx) => (
-            <tr key={idx}>
-              <td className="p-2 border">
-                {team ? (
-                  <Link to={`/profile/${team.user_id}`} className="text-blue-600 underline">
-                    {team.name}
-                  </Link>
-                ) : "N/A"}
-              </td>
-              {showScores && <td className="p-2 border">{team?.score ?? 0}</td>}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        <p className="event-dates">
+          {match.date} - {match.status}
+        </p>
 
-      <div className="mt-4 space-x-2">
-        {isAdmin && (
-          <button
-            onClick={handleDelete}
-            className="bg-red-500 text-white px-2 py-1 rounded"
-          >
-            Delete Match
-          </button>
+        {showScores && (
+          <p className="card-title mt-2">{finalScoreText}</p>
         )}
 
-        {(isAdmin || isPlayer) && (
-          <button
-            onClick={handleRecordResults}
-            className="bg-green-500 text-white px-2 py-1 rounded"
-          >
-            Record Results
-          </button>
+        {!showScores && (
+          <div className="mt-2">
+            {(isAdmin || isPlayer) && (
+              <button className="add-btn" onClick={handleRecordResults}>
+                Record Results
+              </button>
+            )}
+            {isAdmin && (
+              <button className="delete-btn" onClick={handleDelete} style={{ marginLeft: "0.5rem" }}>
+                Delete Match
+              </button>
+            )}
+          </div>
         )}
       </div>
     </div>
