@@ -142,12 +142,15 @@ nav {
 }
 
 .add-btn {
+  height: 2.25rem;
+  padding: 0 0.75rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
   background-color: #28a745;
   color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  cursor: pointer;
+  vertical-align: middle;
 }
 
 .add-btn:hover {
@@ -191,14 +194,21 @@ nav {
 }
 
 .event-form {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+  white-space: nowrap;
+}
+
+.event-form label,
+.event-form .input-field,
+.event-form .add-btn {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 0.5rem;
 }
 
 .input-field {
-  flex: 1;
-  padding: 0.5rem;
+  height: 2.25rem;
+  padding: 0 0.5rem;
+  font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 6px;
 }

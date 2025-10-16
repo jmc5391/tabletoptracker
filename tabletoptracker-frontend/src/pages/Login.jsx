@@ -32,35 +32,27 @@ function Login({ setUser }) {
         {error && <p className="text-red text-center">{error}</p>}
 
         <form onSubmit={handleSubmit} className="event-form">
-          <div className="event-section">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              className="input-field"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="event-section">
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              className="input-field"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <button type="submit" className="add-btn w-full">
-            Login
-          </button>
+          <label htmlFor="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            className="input-field"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            className="input-field"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button type="submit" className="add-btn">Login</button>
         </form>
       </div>
     </div>

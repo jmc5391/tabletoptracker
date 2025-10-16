@@ -41,12 +41,12 @@ def get_user_matches():
         user_mp = next((mp for mp in match.match_players if mp.user_id == user_id), None)
 
         if user_mp:
-            result_label = user_mp.result or "—"
+            result_label = user_mp.result or "-"
             opponent_mp = next((mp for mp in match.match_players if mp.user_id != user_id), None)
             if opponent_mp:
                 result_label = f"{user_mp.score}-{opponent_mp.score} {result_label}"
         else:
-            result_label = "—"
+            result_label = "-"
 
         result.append({
             "match_id": match.match_id,

@@ -56,8 +56,8 @@ function ResultsForm() {
 
   return (
     <div className="event-container">
-      <div className="event-box max-w-md mx-auto">
-        <h2 className="card-title text-center">Record Results for Match {match.match_id}</h2>
+      <div className="event-box">
+        <h2 className="card-title">Record Results for Match {match.players[0]["name"]} vs {match.players[1]["name"]}</h2>
 
         <form onSubmit={handleSubmit} className="event-form">
           {match.players.map(player => (
@@ -75,9 +75,11 @@ function ResultsForm() {
             </div>
           ))}
 
-          <button type="submit" className="add-btn w-full">
-            Submit Results
-          </button>
+          <div className="event-section">
+            <button type="submit" className="add-btn">
+              Submit Results
+            </button>
+          </div>
         </form>
       </div>
     </div>

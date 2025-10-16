@@ -148,7 +148,7 @@ function Dashboard() {
                     <td><Link to={`/events/${m.event_id}`} className="event-admin-link">
                         {m.event_name}
                       </Link></td>
-                    <td>{m.result_label || "—"}</td>
+                    <td>{m.result_label || "-"}</td>
                   </tr>
                 ))}
               </tbody>

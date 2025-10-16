@@ -4,6 +4,7 @@ from app.extensions import db
 from app.models import Event, EventPlayer, User, EventRole, Match, MatchPlayer
 from . import events_bp
 from datetime import datetime, timedelta
+from random import shuffle
 
 
 # helper functions
@@ -409,3 +410,130 @@ def generate_round_robin(event_id):
     return jsonify({"msg": f"Generated {len(created)} matches", "matches": created}), 201
 
 
+@events_bp.route("/<int:event_id>/generate_swiss_round", methods=["POST"])
+@jwt_required()
+def generate_swiss_round(event_id):
+
+    current_user = int(get_jwt_identity())
+    ev = Event.query.get_or_404(event_id)
+
+    # admin check
+    is_admin = any(r.user_id == current_user and r.role == "admin" for r in ev.event_roles)
+    if not is_admin:
+        return jsonify({"msg": "Only admins can generate Swiss rounds"}), 403
+
+    # get all players only (exclude admins)
+    players = [r.user_id for r in ev.event_roles if r.role == "player"]
+    if len(players) < 2:
+        return jsonify({"msg": "Need at least two players"}), 400
+
+    # handle odd number of players (bye round)
+    has_bye = len(players) % 2 != 0
+
+    # compute points from past results
+    points = {pid: 0 for pid in players}
+    past_matches = (
+        Match.query.join(MatchPlayer)
+        .filter(Match.event_id == event_id, Match.status == "completed")
+        .all()
+    )
+
+    # keep track of who played who before
+    played_pairs = set()
+
+    for match in past_matches:
+        mps = MatchPlayer.query.filter_by(match_id=match.match_id).all()
+        if len(mps) != 2:
+            continue
+        p1, p2 = mps[0].user_id, mps[1].user_id
+        # only track pairs where both were players
+        if p1 in players and p2 in players:
+            played_pairs.add(tuple(sorted((p1, p2))))
+
+        # infer results from MatchPlayer entries
+        r1, r2 = mps[0].result, mps[1].result
+        if p1 in players and p2 in players:
+            if r1 == "draw" or r2 == "draw":
+                points[p1] += 1
+                points[p2] += 1
+            elif r1 == "win":
+                points[p1] += 3
+            elif r2 == "win":
+                points[p2] += 3
+
+    # determine next round
+    last_round = db.session.query(db.func.max(Match.round)).filter_by(event_id=event_id).scalar() or 0
+    next_round = last_round + 1
+
+    # sort Swiss style (by points desc, random within groups)
+    groups = {}
+    for pid in players:
+        groups.setdefault(points[pid], []).append(pid)
+    sorted_players = []
+    for pts, group in sorted(groups.items(), key=lambda x: -x[0]):
+        shuffle(group)
+        sorted_players.extend(group)
+
+    # try pairing without repeats
+    pairs = []
+    unpaired = sorted_players[:]
+    while unpaired:
+        p1 = unpaired.pop(0)
+        if not unpaired:
+            # bye round: skip creating match entirely
+            continue
+
+        p2 = None
+        for candidate in unpaired:
+            if tuple(sorted((p1, candidate))) not in played_pairs:
+                p2 = candidate
+                break
+
+        if p2 is None:
+            p2 = unpaired[0]
+
+        unpaired.remove(p2)
+        pairs.append((p1, p2))
+        played_pairs.add(tuple(sorted((p1, p2))))
+
+    # determine match date
+    last_match = (
+        Match.query.filter_by(event_id=event_id)
+        .order_by(Match.date.desc())
+        .first()
+    )
+    start_date = (
+        (last_match.date + timedelta(weeks=1))
+        if last_match else datetime.now().date() + timedelta(days=7)
+    )
+
+    # create matches
+    created = []
+    for p1, p2 in pairs:
+        match = Match(
+            event_id=event_id,
+            round=next_round,
+            date=start_date,
+            status="scheduled",
+        )
+        db.session.add(match)
+        db.session.flush()
+
+        db.session.add(MatchPlayer(match_id=match.match_id, user_id=p1))
+        db.session.add(MatchPlayer(match_id=match.match_id, user_id=p2))
+
+        created.append({
+            "round": next_round,
+            "p1": p1,
+            "p2": p2,
+            "points_p1": points[p1],
+            "points_p2": points[p2],
+        })
+
+    db.session.commit()
+
+    return jsonify({
+        "msg": f"Generated {len(created)} Swiss round {next_round} matches",
+        "round": next_round,
+        "matches": created,
+    }), 201
