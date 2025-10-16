@@ -80,6 +80,8 @@ def get_event(event_id):
     )
 
     matches_data = []
+    player_stats = {p.user_id: {"name": p.name, "wins": 0, "losses": 0, "ties": 0, "score": 0} for p in players}
+    
     for m in matches:
         match_players = [
             {
@@ -91,21 +93,32 @@ def get_event(event_id):
             for mp in m.match_players
         ]
 
+        for mp in match_players:
+            stats = player_stats.get(mp["user_id"])
+            if not stats:
+                continue
+            stats["score"] += mp["score"] or 0
+            if mp["result"] == "win":
+                stats["wins"] += 1
+            elif mp["result"] == "loss":
+                stats["losses"] += 1
+            elif mp["result"] == "tie":
+                stats["ties"] += 1
+
+        result_label = "TBD"
+        if len(match_players) == 2:
+            s1, s2 = match_players[0]["score"], match_players[1]["score"]
+            if s1 > s2:
+                result_label = match_players[0]["name"] + " W " + str(match_players[0]["score"]) + "-" + str(match_players[1]["score"])
+            elif s2 > s1:
+                result_label = match_players[1]["name"] + " W" + str(match_players[1]["score"]) + "-" + str(match_players[0]["score"])
+            else:
+                result_label = "T" + str(match_players[0]["score"]) + "-" + str(match_players[1]["score"])
+
         team1_name = match_players[0]["name"] if len(match_players) > 0 else "TBD"
         team2_name = match_players[1]["name"] if len(match_players) > 1 else "TBD"
         team1_score = match_players[0]["score"] if len(match_players) > 0 else None
         team2_score = match_players[1]["score"] if len(match_players) > 1 else None
-
-        # determine winner/tie label
-        result_label = None
-        if m.status == "completed" and len(match_players) == 2:
-            p1, p2 = match_players
-            if p1["result"] == "win":
-                result_label = f"{p1['name']} W"
-            elif p2["result"] == "win":
-                result_label = f"{p2['name']} W"
-            elif p1["result"] == "tie" and p2["result"] == "tie":
-                result_label = "T"
 
         matches_data.append({
             "match_id": m.match_id,
@@ -116,8 +129,40 @@ def get_event(event_id):
             "team2_score": team2_score,
             "date_played": m.date.isoformat() if m.date else None,
             "status": m.status,
-            "result_label": result_label,
+            "result_label": result_label
         })
+
+    # combine player stats to create leaderboard
+    leaderboard = []
+    for pid, stats in player_stats.items():
+        leaderboard.append({
+            "user_id": pid,
+            "name": stats["name"],
+            "wins": stats["wins"],
+            "losses": stats["losses"],
+            "ties": stats["ties"],
+            "score": stats["score"],
+        })
+
+    # sort leaderboard by results
+    leaderboard.sort(key=lambda x: (-x["wins"], x["losses"], -x["ties"], -x["score"], x["name"].lower()))
+
+    # assign each player a rank
+    ranked_leaderboard = []
+    rank = 1
+    for i, player in enumerate(leaderboard):
+        if i > 0:
+            prev = leaderboard[i - 1]
+            same_record = (
+                player["wins"] == prev["wins"]
+                and player["losses"] == prev["losses"]
+                and player["ties"] == prev["ties"]
+                and player["score"] == prev["score"]
+            )
+            if not same_record:
+                rank = i + 1
+        player["rank"] = rank
+        ranked_leaderboard.append(player)
 
     return jsonify({
         "event_id": event.event_id,
@@ -127,8 +172,8 @@ def get_event(event_id):
         "admins": [{"user_id": a.user_id, "name": a.name, "email": a.email} for a in admins],
         "players": [{"user_id": p.user_id, "name": p.name, "email": p.email} for p in players],
         "matches": matches_data,
+        "leaderboard": ranked_leaderboard,
     }), 200
-
 
 
 @events_bp.route("/<int:event_id>", methods=["DELETE"])
