@@ -118,6 +118,25 @@ function EventSettings() {
         </form>
       </section>
 
+      <section className="event-section">
+        <h3 className="text-red">Scheduling</h3>
+        <button
+        className="add-btn"
+        onClick={async () => {
+          if (!window.confirm("Generate a full round-robin schedule?")) return;
+          try {
+            const res = await API.post(`/api/events/${event.event_id}/generate_round_robin`);
+            alert(res.data.msg);
+            window.location.reload(); // refresh to show new matches
+          } catch (err) {
+            alert(err.response?.data?.msg || "Failed to generate schedule");
+          }
+        }}
+        >
+        Generate Round-Robin Schedule
+        </button>
+      </section>
+
       {/* Delete Event */}
       <section className="event-section">
         <h3 className="text-red">Delete Event</h3>

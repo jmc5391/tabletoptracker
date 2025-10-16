@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.extensions import db
 from app.models import Event, EventPlayer, User, EventRole, Match, MatchPlayer
 from . import events_bp
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 # helper functions
@@ -334,3 +334,78 @@ def create_match(event_id):
     db.session.commit()
 
     return jsonify({"msg": "Match created", "match_id": match.match_id}), 201
+
+
+@events_bp.route("/<int:event_id>/generate_round_robin", methods=["POST"])
+@jwt_required()
+def generate_round_robin(event_id):
+    current_user = int(get_jwt_identity())
+    ev = Event.query.get_or_404(event_id)
+
+    # check admin permission
+    is_admin = any(r.user_id == current_user and r.role == "admin" for r in ev.event_roles)
+    if not is_admin:
+        return jsonify({"msg": "Only admins can generate round robin"}), 403
+
+    # gather only players from this event
+    players = [r.user_id for r in ev.event_roles if r.role == "player"]
+    if len(players) < 2:
+        return jsonify({"msg": "Need at least two players"}), 400
+
+    # add dummy "Bye" if odd count
+    dummy_id = None
+    if len(players) % 2 != 0:
+        dummy = User.query.filter_by(email="__DUMMY__").first()
+        if not dummy:
+            dummy = User(name="Bye", email="__DUMMY__")
+            db.session.add(dummy)
+            db.session.commit()
+        dummy_id = dummy.user_id
+        players.append(dummy_id)
+
+    # round-robin (circle method)
+    num_players = len(players)
+    rounds = num_players - 1
+    half = num_players // 2
+    player_list = players[:]
+    schedule = []
+
+    for r in range(rounds):
+        pairs = []
+        for i in range(half):
+            p1 = player_list[i]
+            p2 = player_list[num_players - 1 - i]
+            if dummy_id not in (p1, p2):  # skip bye matches
+                pairs.append((p1, p2))
+        schedule.append(pairs)
+
+        # correct rotation: fix first, rotate remainder clockwise
+        fixed = player_list[0]
+        rotating = player_list[1:]
+        rotating = [rotating[-1]] + rotating[:-1]
+        player_list = [fixed] + rotating
+
+    # schedule matches one week apart
+    start_date = datetime.now().date() + timedelta(days=7)
+    created = []
+    for round_num, round_pairs in enumerate(schedule, start=1):
+        match_date = start_date + timedelta(weeks=round_num - 1)
+        for p1, p2 in round_pairs:
+            match = Match(
+                event_id=event_id,
+                round=round_num,
+                date=match_date,
+                status="scheduled",
+            )
+            db.session.add(match)
+            db.session.flush()
+            db.session.add_all([
+                MatchPlayer(match_id=match.match_id, user_id=p1),
+                MatchPlayer(match_id=match.match_id, user_id=p2),
+            ])
+            created.append({"round": round_num, "p1": p1, "p2": p2})
+    db.session.commit()
+
+    return jsonify({"msg": f"Generated {len(created)} matches", "matches": created}), 201
+
+
