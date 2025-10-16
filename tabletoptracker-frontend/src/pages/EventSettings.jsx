@@ -61,39 +61,38 @@ function EventSettings() {
     }
   };
 
-  if (error) return <p className="text-red-500">{error}</p>;
+  if (error) return <p className="error-text">{error}</p>;
   if (!event) return <p>Loading event settings...</p>;
 
   return (
-    <div className="p-4 space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Event Settings — {event.name}</h2>
-        <button
-          onClick={() => navigate(`/events/${eventId}`)}
-          className="bg-gray-500 text-white px-3 py-1 rounded"
-        >
+    <div className="event-container">
+      {/* Header */}
+      <div className="event-header event-settings-header">
+        <h2 className="event-title">Event Settings — {event.name}</h2>
+        <button className="back-btn" onClick={() => navigate(`/events/${eventId}`)}>
           Back to Event
         </button>
       </div>
 
-      <section>
-        <h3 className="text-lg font-semibold mt-4">Players</h3>
-        <table className="min-w-full border mt-2">
+      {/* Players */}
+      <section className="event-section">
+        <h3>Players</h3>
+        <table className="event-table">
           <thead>
-            <tr className="bg-gray-100 text-left">
-              <th className="p-2 border">Name</th>
-              <th className="p-2 border">Email</th>
-              <th className="p-2 border">Actions</th>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {event.players.map((p) => (
               <tr key={p.user_id}>
-                <td className="p-2 border">{p.name}</td>
-                <td className="p-2 border">{p.email}</td>
-                <td className="p-2 border">
+                <td>{p.name}</td>
+                <td>{p.email}</td>
+                <td>
                   <button
-                    className="bg-red-500 text-white px-2 py-1 rounded"
+                    className="delete-btn"
                     onClick={() => handleDeletePlayer(p.user_id)}
                   >
                     Remove
@@ -104,27 +103,25 @@ function EventSettings() {
           </tbody>
         </table>
 
-        <form onSubmit={handleAddPlayer} className="space-x-2 mt-4">
+        <form onSubmit={handleAddPlayer} className="event-form">
           <input
             type="email"
             placeholder="Player email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="border p-2 rounded"
+            className="input-field"
             required
           />
-          <button className="bg-blue-500 text-white p-2 rounded" type="submit">
+          <button type="submit" className="add-btn">
             Add Player
           </button>
         </form>
       </section>
 
-      <section>
-        <h3 className="text-lg font-semibold mt-8 text-red-600">Delete Event</h3>
-        <button
-          onClick={handleDeleteEvent}
-          className="bg-red-600 text-white p-2 rounded mt-2"
-        >
+      {/* Delete Event */}
+      <section className="event-section">
+        <h3 className="text-red">Delete Event</h3>
+        <button className="delete-btn mt-2" onClick={handleDeleteEvent}>
           Delete Event
         </button>
       </section>
