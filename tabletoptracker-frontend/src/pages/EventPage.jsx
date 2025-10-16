@@ -147,7 +147,7 @@ function EventPage() {
                         {m.match_title}
                       </Link>
                     </td>
-                    <td>{m.date_played || "—"}</td>
+                    <td>{m.date_played || "-"}</td>
                     {isAdmin && (
                       <td className="text-center">
                         <button onClick={() => handleDeleteMatch(m.match_id)} className="delete-btn">
@@ -192,8 +192,8 @@ function EventPage() {
                         {m.match_title}
                       </Link>
                     </td>
-                    <td>{m.date_played || "—"}</td>
-                    <td className="text-center">{m.result_label || "—"}</td>
+                    <td>{m.date_played || "-"}</td>
+                    <td className="text-center">{m.result_label || "-"}</td>
                   </tr>
                 ))}
               </tbody>

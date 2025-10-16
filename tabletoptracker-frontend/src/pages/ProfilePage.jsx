@@ -11,54 +11,38 @@ function ProfilePage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        const endpoint = userId ? `/api/users/${userId}` : "/api/users/me";
-        const profileRes = await API.get(endpoint);
-        setUser(profileRes.data);
+  const fetchProfileData = async () => {
+    try {
+      const endpoint = userId ? `/api/users/${userId}` : "/api/users/me";
+      const profileRes = await API.get(endpoint);
+      setUser(profileRes.data);
 
-        // get this user's matches via /matches endpoint
-        const matchesRes = await API.get(`/api/matches?user_id=${profileRes.data.user_id}`);
-        const allMatches = matchesRes.data;
+      // fetch all events just like Dashboard
+      const eventsRes = await API.get("/api/events");
+      setEvents(eventsRes.data);
 
-        // extract unique events
-        const userEvents = [];
-        const eventMap = {};
-        allMatches.forEach((m) => {
-          if (!eventMap[m.event_id]) {
-            eventMap[m.event_id] = true;
-            userEvents.push({
-              event_id: m.event_id,
-              name: m.event_name,
-              start_date: m.start_date,
-              end_date: m.end_date,
-            });
-          }
-        });
-        setEvents(userEvents);
+      // get this user's matches
+      const matchesRes = await API.get(`/api/matches?user_id=${profileRes.data.user_id}`);
+      const allMatches = matchesRes.data;
 
-        // split upcoming vs past
-        const upcoming = [];
-        const past = [];
-        allMatches.forEach((m) => {
-          const matchData = { ...m, eventName: m.event_name };
-          if (m.status === "completed") past.push(matchData);
-          else upcoming.push(matchData);
-        });
+      // split upcoming vs past
+      const upcoming = allMatches
+        .filter((m) => m.status === "scheduled")
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-        // sort by date ascending
-        upcoming.sort((a, b) => new Date(a.date_played) - new Date(b.date_played));
-        past.sort((a, b) => new Date(b.date_played) - new Date(a.date_played)); // most recent first
+      const past = allMatches
+        .filter((m) => m.status === "completed")
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        setUpcomingMatches(upcoming);
-        setPastMatches(past);
-      } catch (err) {
-        console.error(err);
-        setError(err.response?.data?.msg || "Failed to load profile");
-      }
-    };
-    fetchProfileData();
-  }, [userId]);
+      setUpcomingMatches(upcoming);
+      setPastMatches(past);
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.msg || "Failed to load profile");
+    }
+  };
+  fetchProfileData();
+}, [userId]);
 
   if (error) return <p className="text-red">{error}</p>;
   if (!user) return <p>Loading profile...</p>;
@@ -125,7 +109,7 @@ function ProfilePage() {
                     </td>
                     <td>
                       <Link to={`/events/${m.event_id}`} className="event-admin-link">
-                        {m.eventName}
+                        {m.event_name}
                       </Link>
                     </td>
                     <td>{m.date || "TBD"}</td>
@@ -158,8 +142,12 @@ function ProfilePage() {
                         {m.match_title}
                       </Link>
                     </td>
-                    <td>{m.eventName}</td>
-                    <td>{m.result_label || "—"}</td>
+                    <td>
+                      <Link to={`/events/${m.event_id}`} className="event-admin-link">
+                        {m.event_name}
+                      </Link>
+                    </td>
+                    <td>{m.result_label || "-"}</td>
                   </tr>
                 ))}
               </tbody>

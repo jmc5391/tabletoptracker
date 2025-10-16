@@ -48,6 +48,10 @@ function MatchPage() {
     navigate(`/matches/${matchId}/results`);
   };
 
+  const handleBackToEvent = () => {
+    navigate(`/events/${match.event_id}`);
+  };
+
   if (error) return <p className="text-red">{error}</p>;
   if (!match) return <p>Loading match...</p>;
 
@@ -67,9 +71,14 @@ function MatchPage() {
 
   return (
     <div className="event-container">
-      <div className="event-header">
+      {/* Header */}
+      <div className="event-header event-settings-header">
         <h2 className="event-title">Match Details</h2>
+        <button className="back-btn" onClick={handleBackToEvent}>
+          Back to Event
+        </button>
       </div>
+
       <div className="event-box text-center">
         <h1 style={{ fontSize: "2rem", fontWeight: "700", marginBottom: "0.5rem" }}>
           <Link to={`/profile/${player1?.user_id}`} className="event-admin-link">
@@ -96,11 +105,18 @@ function MatchPage() {
                 Record Results
               </button>
             )}
-            {isAdmin && (
-              <button className="delete-btn" onClick={handleDelete} style={{ marginLeft: "0.5rem" }}>
-                Delete Match
-              </button>
-            )}
+          </div>
+        )}
+
+        {isAdmin && (
+          <div className="mt-2">
+            <button
+              className="delete-btn"
+              onClick={handleDelete}
+              style={{ marginLeft: "0.5rem" }}
+            >
+              Delete Match
+            </button>
           </div>
         )}
       </div>

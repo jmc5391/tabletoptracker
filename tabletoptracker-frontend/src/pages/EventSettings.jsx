@@ -68,7 +68,7 @@ function EventSettings() {
     <div className="event-container">
       {/* Header */}
       <div className="event-header event-settings-header">
-        <h2 className="event-title">Event Settings — {event.name}</h2>
+        <h2 className="event-title">Event Settings - {event.name}</h2>
         <button className="back-btn" onClick={() => navigate(`/events/${eventId}`)}>
           Back to Event
         </button>
@@ -134,6 +134,21 @@ function EventSettings() {
         }}
         >
         Generate Round-Robin Schedule
+        </button>
+        <button
+        className="add-btn"
+        onClick={async () => {
+          if (!window.confirm("Generate a round of Swiss matches?")) return;
+          try {
+            const res = await API.post(`/api/events/${event.event_id}/generate_swiss_round`);
+            alert(res.data.msg);
+            window.location.reload(); // refresh to show new matches
+          } catch (err) {
+            alert(err.response?.data?.msg || "Failed to generate schedule");
+          }
+        }}
+        >
+        Generate Swiss Schedule Round
         </button>
       </section>
 

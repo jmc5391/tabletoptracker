@@ -44,67 +44,59 @@ export default function MatchForm() {
         {error && <p className="text-red text-center">{error}</p>}
 
         <form onSubmit={handleSubmit} className="event-form">
-          <div className="event-section">
-            <label htmlFor="round">Round</label>
-            <input
-              id="round"
-              type="number"
-              className="input-field"
-              value={round}
-              onChange={(e) => setRound(e.target.value)}
-              required
-            />
-          </div>
+          <label htmlFor="round">Round</label>
+          <input
+            id="round"
+            type="number"
+            className="input-field"
+            value={round}
+            onChange={(e) => setRound(e.target.value)}
+            required
+          />
 
-          <div className="event-section">
-            <label htmlFor="date">Date</label>
-            <input
-              id="date"
-              type="date"
-              className="input-field"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
-          </div>
+          <label htmlFor="date">Date</label>
+          <input
+            id="date"
+            type="date"
+            className="input-field"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
+          />
 
-          <div className="event-section">
-            <label htmlFor="player1">Player 1</label>
-            <select
-              id="player1"
-              className="input-field"
-              value={player1}
-              onChange={(e) => setPlayer1(e.target.value)}
-              required
-            >
-              <option value="">Select...</option>
-              {event.players.map((p) => (
-                <option key={p.user_id} value={p.user_id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <label htmlFor="player1">Player 1</label>
+          <select
+            id="player1"
+            className="input-field"
+            value={player1}
+            onChange={(e) => setPlayer1(e.target.value)}
+            required
+          >
+            <option value="">Select...</option>
+            {event.players.map((p) => (
+              <option key={p.user_id} value={p.user_id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
 
-          <div className="event-section">
-            <label htmlFor="player2">Player 2</label>
-            <select
-              id="player2"
-              className="input-field"
-              value={player2}
-              onChange={(e) => setPlayer2(e.target.value)}
-              required
-            >
-              <option value="">Select...</option>
-              {event.players.map((p) => (
-                <option key={p.user_id} value={p.user_id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <label htmlFor="player2">Player 2</label>
+          <select
+            id="player2"
+            className="input-field"
+            value={player2}
+            onChange={(e) => setPlayer2(e.target.value)}
+            required
+          >
+            <option value="">Select...</option>
+            {event.players.map((p) => (
+              <option key={p.user_id} value={p.user_id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
 
-          <button type="submit" className="add-btn w-full">
+          <button type="submit" className="add-btn">
             Create Match
           </button>
         </form>
