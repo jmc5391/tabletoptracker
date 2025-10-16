@@ -142,7 +142,65 @@ function EventPage() {
             ))}
           </tbody>
         </table>
+        {isAdmin && (
+        <>
+          <form onSubmit={handleAddPlayer} className="space-x-2 mt-4">
+            <input
+              type="email"
+              placeholder="Player email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="border p-2 rounded"
+              required
+            />
+            <button className="bg-blue-500 text-white p-2 rounded" type="submit">
+              Add Player
+            </button>
+          </form>
+        </>
+        )}
       </div>
+
+      {/* Leaderboard */}
+      <section className="mt-8">
+        <h2 className="text-2xl font-semibold mb-3">Leaderboard</h2>
+        <table className="min-w-full border border-gray-300">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="border px-4 py-2 text-left">Rank</th>
+              <th className="border px-4 py-2 text-left">Player</th>
+              <th className="border px-4 py-2 text-center">W</th>
+              <th className="border px-4 py-2 text-center">L</th>
+              <th className="border px-4 py-2 text-center">T</th>
+              <th className="border px-4 py-2 text-center">Points Scored</th>
+            </tr>
+          </thead>
+          <tbody>
+            {event.leaderboard.length > 0 ? (
+              event.leaderboard.map(p => (
+                <tr key={p.user_id}>
+                  <td className="border px-4 py-2 text-center">{p.rank}</td>
+                  <td className="border px-4 py-2">
+                    <Link to={`/profile/${p.user_id}`} className="text-blue-600 underline">
+                      {p.name}
+                    </Link>
+                  </td>
+                  <td className="border px-4 py-2 text-center">{p.wins}</td>
+                  <td className="border px-4 py-2 text-center">{p.losses}</td>
+                  <td className="border px-4 py-2 text-center">{p.ties}</td>
+                  <td className="border px-4 py-2 text-center">{p.score}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="6" className="border px-4 py-2 text-center">
+                  No results yet.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </section>
 
       {/* Upcoming Matches */}
       <div>
@@ -199,20 +257,20 @@ function EventPage() {
           <table className="min-w-full border mt-2">
             <thead>
               <tr className="bg-gray-100 text-left">
-                <th className="p-2 border">Date</th>
                 <th className="p-2 border">Match</th>
+                <th className="p-2 border">Date</th>
                 <th className="p-2 border">Result</th>
               </tr>
             </thead>
             <tbody>
               {pastMatches.map((m) => (
                 <tr key={m.match_id}>
-                  <td className="p-2 border">{m.date_played || "—"}</td>
                   <td className="p-2 border">
                     <Link to={`/matches/${m.match_id}`} className="text-blue-600 underline">
                       {m.match_title}
                     </Link>
                   </td>
+                  <td className="p-2 border">{m.date_played || "—"}</td>
                   <td className="p-2 border text-center">
                     {m.result_label || "—"}
                   </td>
@@ -227,20 +285,6 @@ function EventPage() {
 
       {isAdmin && (
         <>
-          <form onSubmit={handleAddPlayer} className="space-x-2 mt-4">
-            <input
-              type="email"
-              placeholder="Player email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="border p-2 rounded"
-              required
-            />
-            <button className="bg-blue-500 text-white p-2 rounded" type="submit">
-              Add Player
-            </button>
-          </form>
-
           <button
             onClick={handleDelete}
             className="bg-red-500 text-white p-2 rounded mt-4"
