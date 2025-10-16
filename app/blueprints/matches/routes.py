@@ -13,6 +13,56 @@ def _to_int_id(val):
         return val
 
 
+@matches_bp.route("/", methods=["GET"])
+@jwt_required()
+def get_user_matches():
+    user_id = request.args.get("user_id", type=int)
+    if not user_id:
+        return jsonify({"msg": "user_id query parameter required"}), 400
+
+    user = User.query.get_or_404(user_id)
+
+    # join tables
+    matches = (
+        db.session.query(Match, Event)
+        .join(MatchPlayer)
+        .join(Event)
+        .filter(MatchPlayer.user_id == user_id)
+        .all()
+    )
+
+    result = []
+    for match, event in matches:
+        # get the two players
+        players = [mp.user.name for mp in match.match_players]
+        title = f"{players[0]} vs {players[1]}" if len(players) == 2 else f"Round {match.round}"
+
+        # get user's own match_player entry
+        user_mp = next((mp for mp in match.match_players if mp.user_id == user_id), None)
+
+        if user_mp:
+            result_label = user_mp.result or "—"
+            opponent_mp = next((mp for mp in match.match_players if mp.user_id != user_id), None)
+            if opponent_mp:
+                result_label = f"{user_mp.score}-{opponent_mp.score} {result_label}"
+        else:
+            result_label = "—"
+
+        result.append({
+            "match_id": match.match_id,
+            "event_id": match.event_id,
+            "event_name": event.name if event else "Unknown",
+            "match_title": title,
+            "status": match.status,
+            "date": match.date.isoformat() if match.date else None,
+            "result_label": result_label,
+            "start_date": event.start_date.isoformat() if event.start_date else None,
+            "end_date": event.end_date.isoformat() if event.end_date else None
+        })
+
+    return jsonify(result), 200
+
+
 @matches_bp.route("/<int:match_id>", methods=["GET"])
 @jwt_required()
 def get_match(match_id):
@@ -63,7 +113,7 @@ def delete_match(match_id):
 @jwt_required()
 def record_results(match_id):
     match = Match.query.get_or_404(match_id)
-    current_user = get_jwt_identity()
+    current_user = int(get_jwt_identity())
 
     # check either event admin or one of the match players
     is_admin = db.session.query(EventRole).filter_by(

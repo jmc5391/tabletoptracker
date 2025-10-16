@@ -50,36 +50,36 @@ function ResultsForm() {
     }
   };
 
-  if (error) return <p className="text-red-500">{error}</p>;
+  if (error) return <p className="text-red">{error}</p>;
   if (!match) return <p>Loading match...</p>;
-  if (!isAuthorized) return <p className="text-red-500">You are not authorized to record results for this match.</p>;
+  if (!isAuthorized) return <p className="text-red">You are not authorized to record results for this match.</p>;
 
   return (
-    <div className="p-4 space-y-4">
-      <h2 className="text-2xl font-bold">Record Results for Match {match.match_id}</h2>
+    <div className="event-container">
+      <div className="event-box max-w-md mx-auto">
+        <h2 className="card-title text-center">Record Results for Match {match.match_id}</h2>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {match.players.map(player => (
-          <div key={player.user_id} className="flex items-center space-x-4">
-            <label className="w-32">{player.name}:</label>
-            <input
-              type="number"
-              min="0"
-              value={scores[player.user_id]}
-              onChange={e => handleChange(player.user_id, e.target.value)}
-              className="border p-1 rounded w-20"
-              required
-            />
-          </div>
-        ))}
+        <form onSubmit={handleSubmit} className="event-form">
+          {match.players.map(player => (
+            <div key={player.user_id} className="event-section">
+              <label htmlFor={`player-${player.user_id}`}>{player.name}:</label>
+              <input
+                id={`player-${player.user_id}`}
+                type="number"
+                min="0"
+                value={scores[player.user_id]}
+                onChange={e => handleChange(player.user_id, e.target.value)}
+                className="input-field"
+                required
+              />
+            </div>
+          ))}
 
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          Submit Results
-        </button>
-      </form>
+          <button type="submit" className="add-btn w-full">
+            Submit Results
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

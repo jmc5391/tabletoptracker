@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import API from "../api/axios";
 
 export default function Navbar({ user, setUser }) {
@@ -16,27 +16,39 @@ export default function Navbar({ user, setUser }) {
   };
 
   return (
-    <nav>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <div>Tabletop Tracker</div>
+    <nav className="navbar">
+      <div className="navbar-container">
+        <Link to="/" className="navbar-logo">
+          Tabletop Tracker
+        </Link>
 
-        {user ? (
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            <span>Hello, {user.name || "User"}</span>
-            <button onClick={handleLogout}>Logout</button>
-          </div>
-        ) : (
-          <div style={{ display: "flex", gap: "1rem" }}>
-            <button onClick={() => navigate("/login")}>Login</button>
-            <button onClick={() => navigate("/register")}>Register</button>
-          </div>
-        )}
+        <div className="navbar-actions">
+          {user ? (
+            <>
+              <Link to="/dashboard" className="navbar-user">
+                {user.name || "User"}
+              </Link>
+              <button onClick={handleLogout} className="navbar-button logout">
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => navigate("/login")}
+                className="navbar-button login"
+              >
+                Login
+              </button>
+              <button
+                onClick={() => navigate("/register")}
+                className="navbar-button register"
+              >
+                Register
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </nav>
   );

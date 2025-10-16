@@ -10,6 +10,7 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import EventPage from "./pages/EventPage";
+import EventSettings from "./pages/EventSettings";
 import MatchPage from "./pages/MatchPage";
 import ProfilePage from "./pages/ProfilePage";
 import EventForm from "./pages/EventForm";
@@ -45,6 +46,7 @@ function App() {
           <Route path="/profile/:userId" element={<ProfilePage />}/>
           <Route path="/events/new" element={<EventForm />} />
           <Route path="/events/:eventId" element={<EventPage />} />
+          <Route path="/events/:eventId/settings" element={<EventSettings />} />
           <Route path="/events/:eventId/matches/new" element={<MatchForm />} />
           <Route path="/matches/:matchId/results" element={<ResultsForm />} />
         </Routes>

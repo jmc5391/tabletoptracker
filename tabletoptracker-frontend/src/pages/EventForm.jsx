@@ -27,59 +27,53 @@ export default function EventForm() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 rounded-xl shadow-md bg-white">
-      <h2 className="text-2xl font-bold mb-4">Create New Event</h2>
+    <div className="event-container">
+      <div className="event-box">
+        <h2 className="card-title text-center">Create New Event</h2>
 
-      {error && (
-        <div className="bg-red-100 text-red-700 p-2 rounded mb-3">{error}</div>
-      )}
+        {error && <p className="text-red text-center">{error}</p>}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Event Name
-          </label>
-          <input
-            type="text"
-            className="mt-1 w-full border border-gray-300 rounded p-2"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="event-form">
+          <div className="event-section">
+            <label htmlFor="name">Event Name</label>
+            <input
+              id="name"
+              type="text"
+              className="input-field"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Start Date
-          </label>
-          <input
-            type="date"
-            className="mt-1 w-full border border-gray-300 rounded p-2"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            required
-          />
-        </div>
+          <div className="event-section">
+            <label htmlFor="startDate">Start Date</label>
+            <input
+              id="startDate"
+              type="date"
+              className="input-field"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              required
+            />
+          </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            End Date
-          </label>
-          <input
-            type="date"
-            className="mt-1 w-full border border-gray-300 rounded p-2"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-          />
-        </div>
+          <div className="event-section">
+            <label htmlFor="endDate">End Date</label>
+            <input
+              id="endDate"
+              type="date"
+              className="input-field"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </div>
 
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-        >
-          Create Event
-        </button>
-      </form>
+          <button type="submit" className="add-btn w-full">
+            Create Event
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
