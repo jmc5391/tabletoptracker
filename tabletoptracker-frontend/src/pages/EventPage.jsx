@@ -7,7 +7,6 @@ function EventPage() {
   const navigate = useNavigate();
   const [event, setEvent] = useState(null);
   const [error, setError] = useState("");
-  const [email, setEmail] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -21,7 +20,6 @@ function EventPage() {
         const eventData = eventRes.data;
         const myId = meRes.data.user_id;
 
-        // determine if current user is an event admin
         const amAdmin = eventData.admins?.some((a) => a.user_id === myId);
         setIsAdmin(amAdmin);
         setEvent(eventData);
@@ -42,47 +40,6 @@ function EventPage() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this event?")) return;
-    try {
-      await API.delete(`/api/events/${eventId}`);
-      navigate("/dashboard");
-    } catch (err) {
-      setError(err.response?.data?.msg || "Delete failed");
-    }
-  };
-
-  const handleAddPlayer = async (e) => {
-    e.preventDefault();
-    try {
-      await API.post(`/api/events/${eventId}/players`, { email });
-      setEmail("");
-      await refreshEvent();
-    } catch (err) {
-      setError(err.response?.data?.msg || "Failed to add player");
-    }
-  };
-
-  const handleDeletePlayer = async (playerId) => {
-    if (!window.confirm("Remove this player from the event?")) return;
-    try {
-      await API.delete(`/api/events/${eventId}/players/${playerId}`);
-      await refreshEvent();
-    } catch (err) {
-      setError(err.response?.data?.msg || "Failed to remove player");
-    }
-  };
-
-  const handleDeleteMatch = async (matchId) => {
-    if (!window.confirm("Are you sure you want to delete this match?")) return;
-    try {
-      await API.delete(`/api/matches/${matchId}`);
-      await refreshEvent();
-    } catch (err) {
-      setError(err.response?.data?.msg || "Failed to delete match");
-    }
-  };
-
   if (error) return <p className="text-red-500">{error}</p>;
   if (!event) return <p>Loading event...</p>;
 
@@ -91,7 +48,18 @@ function EventPage() {
 
   return (
     <div className="p-4 space-y-6">
-      <h2 className="text-2xl font-bold">{event.name}</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">{event.name}</h2>
+        {isAdmin && (
+          <button
+            onClick={() => navigate(`/events/${eventId}/settings`)}
+            className="bg-gray-700 text-white px-3 py-2 rounded"
+          >
+            Event Settings
+          </button>
+        )}
+      </div>
+
       <p>
         <strong>Start:</strong> {event.start_date || "N/A"}
         <br />
@@ -107,58 +75,6 @@ function EventPage() {
             </li>
           ))}
         </ul>
-      </div>
-
-      <div>
-        <h3 className="text-lg font-semibold mt-4">Players</h3>
-        <table className="min-w-full border mt-2">
-          <thead>
-            <tr className="bg-gray-100 text-left">
-              <th className="p-2 border">Name</th>
-              <th className="p-2 border">Email</th>
-              {isAdmin && <th className="p-2 border">Actions</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {event.players.map((p) => (
-              <tr key={p.user_id}>
-                <td className="p-2 border">
-                  <Link to={`/profile/${p.user_id}`} className="text-blue-600 underline">
-                    {p.name}
-                  </Link>
-                </td>
-                <td className="p-2 border">{p.email}</td>
-                {isAdmin && (
-                  <td className="p-2 border">
-                    <button
-                      className="bg-red-500 text-white px-2 py-1 rounded"
-                      onClick={() => handleDeletePlayer(p.user_id)}
-                    >
-                      Remove
-                    </button>
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {isAdmin && (
-        <>
-          <form onSubmit={handleAddPlayer} className="space-x-2 mt-4">
-            <input
-              type="email"
-              placeholder="Player email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="border p-2 rounded"
-              required
-            />
-            <button className="bg-blue-500 text-white p-2 rounded" type="submit">
-              Add Player
-            </button>
-          </form>
-        </>
-        )}
       </div>
 
       {/* Leaderboard */}
@@ -177,7 +93,7 @@ function EventPage() {
           </thead>
           <tbody>
             {event.leaderboard.length > 0 ? (
-              event.leaderboard.map(p => (
+              event.leaderboard.map((p) => (
                 <tr key={p.user_id}>
                   <td className="border px-4 py-2 text-center">{p.rank}</td>
                   <td className="border px-4 py-2">
@@ -226,10 +142,10 @@ function EventPage() {
                   {isAdmin && (
                     <td className="p-2 border">
                       <button
-                        onClick={() => handleDeleteMatch(m.match_id)}
-                        className="bg-red-500 text-white px-2 py-1 rounded"
+                        onClick={() => navigate(`/events/${eventId}/matches/new`)}
+                        className="bg-green-500 text-white px-2 py-1 rounded"
                       >
-                        Delete
+                        + Add Match
                       </button>
                     </td>
                   )}
@@ -239,14 +155,6 @@ function EventPage() {
           </table>
         ) : (
           <p className="mt-2 text-gray-600">No upcoming matches.</p>
-        )}
-        {isAdmin && (
-          <button
-            onClick={() => navigate(`/events/${eventId}/matches/new`)}
-            className="bg-green-500 text-white p-2 rounded mt-4"
-          >
-            + Add Match
-          </button>
         )}
       </div>
 
@@ -282,17 +190,6 @@ function EventPage() {
           <p className="mt-2 text-gray-600">No past matches.</p>
         )}
       </div>
-
-      {isAdmin && (
-        <>
-          <button
-            onClick={handleDelete}
-            className="bg-red-500 text-white p-2 rounded mt-4"
-          >
-            Delete Event
-          </button>
-        </>
-      )}
     </div>
   );
 }
